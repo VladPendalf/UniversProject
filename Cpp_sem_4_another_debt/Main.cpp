@@ -2,6 +2,9 @@
 #include <iostream>
 #include <string>
 
+//интересная ссылка (я не понимаю, как работают повороты)
+//https://github.com/Bibeknam/algorithmtutorprograms/blob/master/data-structures/avl-trees/AVLTree.cpp
+
 ///
 /// Домашнее задание:
 ///
