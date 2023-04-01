@@ -225,13 +225,11 @@ class Tree
         if (node && name.compare(node->name) > 0) // имя нового элемента длиннее имени корня
         {
             node->right = addNode(name, node->right, node);
-            std::cout << "\naddNode(Node*, name) right = " << name;
             parent = testToBalance(parent);
         }
         else if (node && name.compare(node->name) < 0) // имя нового элемента короче имени корня
         {
             node->left = addNode(name, node->left, node);
-            std::cout << "\naddNode(Node*, name) left = " << name;
             parent = testToBalance(parent);
         }
 
@@ -292,7 +290,7 @@ public:
     {
         int bal_factor = difference(node);
         std::cout << "\nbal_factor = " << bal_factor;
-        if (bal_factor > 1) 
+        if (bal_factor > 1)
         {
             if (difference(node->getLeft()) > 0)
             {
@@ -300,12 +298,11 @@ public:
             }
             else
             {
-                bigTurnLeft(node->right, node, node->right->left);
-                //smallTurnRight(node, node->right);
-                //smallTurnLeft(node->parent, node);
+                smallTurnLeft(node, node->left);
+                //smallTurnLeft(node, node->right);
             }
         }
-        else if (bal_factor < -1) 
+        else if (bal_factor < -1)
         {
             if (difference(node->getRight()) > 0)
             {
@@ -313,9 +310,8 @@ public:
             }
             else
             {
-                bigTurnRight(node->left, node, node->left->right);
-                //smallTurnRight(b, c);
-                //smallTurnLeft(a, c);
+                smallTurnLeft(node, node->right);
+                //smallTurnLeft(node, node->right);
             }
 
         }
@@ -441,10 +437,11 @@ void testAddNode() {
     assert(def->name == "Def");
     assert(def->description == "");
     assert(def->getParent() == abc);
-    assert(abc->getLeft() == def);*/
+    assert(abc->getRight() == def);*/
     result->print();
 
     auto ghi = result->addNode("Ghi");
+    ghi = result->findNode("Ghi");
     /*assert(ghi != nullptr);
     assert(ghi->name == "Ghi");
     assert(ghi->description == "");
@@ -454,15 +451,16 @@ void testAddNode() {
     result->print();
 
     auto abb = result->addNode("Abb");
-    /*assert(abb != nullptr);
-    assert(abb->name == "Abb");
-    assert(abb->description == "");
-    assert(abb->getParent() == abc);
-    assert(abb->getLeft() == nullptr);
-    assert(abb->getRight() == nullptr);
-    assert(abc->getParent() == def);
-    assert(abc->getLeft() == abb);
-    assert(abc->getRight() == nullptr);*/
+    abb = result->findNode("Abb");
+    //assert(abb != nullptr);
+    //assert(abb->name == "Abb");
+    //assert(abb->description == "");
+    //assert(abb->getParent() == abc);
+    //assert(abb->getLeft() == nullptr);
+    //assert(abb->getRight() == nullptr);
+    //assert(abc->getParent() == def);
+    //assert(abc->getLeft() == abb);
+    //assert(abc->getRight() == nullptr);
     result->print();
 
     auto ab = result->addNode("Ab");
@@ -493,6 +491,7 @@ void testAddNode() {
     //assert(abc->getParent() == abb);
     //assert(abc->getLeft() == nullptr);
     //assert(abc->getRight() == def);
+
     result->print();
 
     auto ddf = result->addNode("Ddf");
