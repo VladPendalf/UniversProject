@@ -70,6 +70,14 @@ public:
         parent(parent_),
         name(name_)
     { }
+    Node(const Node*& newNode)
+    {
+        this->parent = newNode->parent;
+        this->left = newNode->left;
+        this->right = newNode->right;
+        this->name = newNode->name;
+        this->description = newNode->description;
+    }
 
     Node* findMin() {
         Node* temp = this;
@@ -258,6 +266,68 @@ public:
     {
         deleteNode(root);
     }
+
+    Node* addNode(Node* newNode = nullptr)
+    {
+        auto tempResNode = findNode(newNode->name);
+        if (tempResNode != nullptr) // дубликат
+        {
+            return tempResNode;
+        }
+        else if (!newNode) //кто-то решил что-то проверить
+        {
+            return nullptr;
+        }
+        else // Node уже живой и существует
+        {
+            if (root == nullptr)
+            {
+                root = newNode;
+                return root;
+            }
+
+            Node* closest = findClosest(newNode->name);
+
+            if (newNode->name.compare(closest->name) < 0)
+            {
+                closest->left = newNode;
+                newNode->parent = closest;
+            }
+            else if (newNode->name.compare(closest->name) > 0)
+            {
+                closest->right = newNode;
+                newNode->parent = closest;
+            }
+
+            if (closest == root)
+                return newNode;
+
+            if (closest->parent->left == closest)
+            {
+                if (closest->parent->right == nullptr)
+                {
+                    if (newNode->name.compare(closest->name) < 0)
+                        smallTurnRight(closest->parent, closest);
+                    else
+                        bigTurnRight(closest->parent, closest, newNode);
+                }
+            }
+            else
+            {
+                if (closest->parent->left == nullptr)
+                {
+                    if (newNode->name.compare(closest->name) < 0)
+                        bigTurnLeft(closest->parent, closest, newNode);
+                    else
+                        smallTurnLeft(closest->parent, closest);
+                }
+            }
+
+            return newNode;
+        }
+
+    }
+
     Node* addNode(const std::string& name)
     {
         if (root == nullptr)
@@ -287,7 +357,6 @@ public:
         if (closest == root)
             return newNode;
 
-        auto node = closest->parent;
         if (closest->parent->left == closest)
         {
             if (closest->parent->right == nullptr)
@@ -498,6 +567,25 @@ void testAddNode() {
 
     auto search_node = result->findNode("Abc");
     assert(search_node == abc);
+
+    Node* NodeTest = new Node("Test");
+    auto NodeTest2 = new Node("TZest");
+    Tree* Tree2 = new Tree();
+    auto res = Tree2->addNode(NodeTest);
+    assert(res != nullptr);
+    assert(res->name == "Test");
+    assert(res->getParent() == nullptr);
+    assert(res->getRight() == nullptr);
+    assert(res->getLeft() == nullptr);
+
+    auto res2 = Tree2->addNode(NodeTest2);
+    assert(res2 != nullptr);
+    assert(res2->name == "TZest");
+    assert(res2->getParent() == res);
+    assert(res2->getRight() == nullptr);
+    assert(res2->getLeft() == nullptr);
+    assert(res->getLeft() == res2);
+    assert(res->getRight() == nullptr);
 
     std::cout << "\nTest Complite\n";
 }
