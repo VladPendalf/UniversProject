@@ -1,54 +1,56 @@
 #include <cassert>
-#include <iostream>
-#include <string>
-
-//интересная ссылка (я не понимаю, как работают повороты)
-//https://github.com/Bibeknam/algorithmtutorprograms/blob/master/data-structures/avl-trees/AVLTree.cpp
-
-///
-/// Домашнее задание:
-///
-/// 1.  Добавить findMin() и findMax() в классе Node, аналогичные таковым в Tree;
-///     они должны искать в поддереве, корнем которого является текущий узел.
-///
-/// 2.  Реализовать малый правый поворот, а также большие левый и правый повороты
-///     в классе Tree, по аналогии с малым левым поворотом.
-///
-/// 3.  Реализовать префиксный оператор «++» для итератора.
-///
-/// 4.  Реализовать Tree::findClosest() и Tree::deleteNode().
-///
-/// 5.  Реализовать юнит-тесты на все публичные методы классов Tree и TreeIterator,
-///     кроме тривиальных. Прогонять эти тесты в функции main().
-///
-
-/**
-1. Добавление.
-    а) (интерфейсный способ) Создаём дерево, вызываем addNode(), проверяем:
-        * что элемент добавился?
-        * что элемент добавился по соседству с определёнными другими элементами?
-        * сравнить дерево целиком с эталоном?
-    б) (инвазивный) Конструируем объекты Node и Tree вручную, затем вызываем addNode(), проверяем (то же).
-2. Удаление.
-    а) Создаём дерево, вызываем removeNode(), проверяем:
-        * что элемента в дереве больше нет?
-        * что бывшие соседи элемента получили определённое новое состояние?
-        * сравнить дерево целиком с эталоном?
-    б) Конструируем объекты Node и Tree вручную, затем вызываем removeNode(), проверяем (то же).
-3. Проход по дереву.
-    а) Создаём дерево, создаём итератор, в цикле сдвигаем итератор, проверяя на каждом шаге, что
-       мы перешли к определённому элементу.
-    б) То же самое, но дерево создаётся вручную.
-*/
-
+#include <iterator>
+//#include <iostream>
+//#include <string>
+//
+/////
+///// Домашнее задание:
+/////
+///// 1.  Добавить findMin() и findMax() в классе Node, аналогичные таковым в Tree; 
+/////     они должны искать в поддереве, корнем которого является текущий узел.            +
+/////
+///// 2.  Реализовать малый правый поворот, а также большие левый и правый повороты
+/////     в классе Tree, по аналогии с малым левым поворотом.                              +
+/////
+///// 3.  Реализовать префиксный оператор «++» для итератора.                              +
+/////
+///// 4.  Реализовать Tree::findClosest() и Tree::deleteNode().                            +
+/////
+///// 5.  Реализовать юнит-тесты на все публичные методы классов Tree и TreeIterator,
+/////     кроме тривиальных. Прогонять эти тесты в функции main().
+/////
+//
+///**
+//1. Добавление.
+//    а) (интерфейсный способ) Создаём дерево, вызываем addNode(), проверяем:
+//        * что элемент добавился?
+//        * что элемент добавился по соседству с определёнными другими элементами?
+//        * сравнить дерево целиком с эталоном?
+//    б) (инвазивный) Конструируем объекты Node и Tree вручную, затем вызываем addNode(), проверяем (то же).
+//2. Удаление.
+//    а) Создаём дерево, вызываем removeNode(), проверяем:
+//        * что элемента в дереве больше нет?
+//        * что бывшие соседи элемента получили определённое новое состояние?
+//        * сравнить дерево целиком с эталоном?
+//    б) Конструируем объекты Node и Tree вручную, затем вызываем removeNode(), проверяем (то же).
+//3. Проход по дереву.
+//    а) Создаём дерево, создаём итератор, в цикле сдвигаем итератор, проверяя на каждом шаге, что
+//       мы перешли к определённому элементу.
+//    б) То же самое, но дерево создаётся вручную.
+//*/
+//
 class Tree;
 class TreeIterator;
 
+#include <cassert>
+#include <iostream>
+#include <string>
+
+class Tree;
+
 class Node
 {
-    Node* left = nullptr,
-        * right = nullptr,
-        * parent = nullptr;
+    Node* left, * right, * parent;
     friend class Tree;
 
 public:
@@ -62,23 +64,25 @@ public:
     std::string name;
     std::string description;
 
-    Node(const std::string& name_, Node* parent_ = nullptr) :
-        left(nullptr), right(nullptr), parent(parent_), name(name_) { }
+    Node(const std::string& name_, Node* parent_ = nullptr)
+        : left(nullptr),
+        right(nullptr),
+        parent(parent_),
+        name(name_)
+    { }
 
-    Node* findMin()
-    {
-        Node* node = this;
-        while (node->left)
-            node = node->left;
-        return node;
+    Node* findMin() {
+        Node* temp = this;
+        while (temp->left)
+            temp = temp->left;
+        return temp;
     }
 
-    Node* findMax()
-    {
-        Node* node = this;
-        while (node->right)
-            node = node->right;
-        return node;
+    Node* findMax() {
+        Node* temp = this;
+        while (temp->right)
+            temp = temp->right;
+        return temp;
     }
 };
 
@@ -157,52 +161,50 @@ public:
 
 };
 
-class Tree
-{
+
+class Tree {
     Node* root;
 
-    /// Вход: b > a, a - родитель b
-    /// Выход: b - родитель a
-    void smallTurnLeft(Node*& a, Node* b)
+    void smallTurnLeft(Node* a, Node* b)
     {
-        Node* y = b->right;
-        b->right = y->left;
-        if (y->left)
-            y->left->parent = b;
-
-        y->parent = b->parent;
-        if (!b->parent)
-            a = y;
-        else {
-            if (b == b->parent->left)
-                b->parent->left = y;
+        if (a->parent)
+            if (a->parent->right && a->parent->right == a)
+                a->parent->right = b;
             else
-                b->parent->right = y;
+                a->parent->left = b;
+        else
+            root = b;
+        b->parent = a->parent;
+        a->parent = b;
+        if (b->left)
+        {
+            b->left->parent = a;
+            a->right = b->left;
         }
-        y->left = b;
-        b->parent = y;
+        else
+            a->right = nullptr;
+        b->left = a;
     }
 
-    /// Вход: b < a, a - родитель b
-    /// Выход: b - родитель a
-    void smallTurnRight(Node*& a, Node* b)
+    void smallTurnRight(Node* a, Node* b)
     {
-        Node* y = b->left;
-        b->left = y->right;
-        if (y->right)
-            y->right->parent = b;
-
-        y->parent = b->parent;
-        if (!b->parent)
-            a = y;
-        else {
-            if (b == b->parent->right)
-                b->parent->right = y;
+        if (a->parent)
+            if (a->parent->left && a->parent->left == a)
+                a->parent->left = b;
             else
-                b->parent->left = y;
+                a->parent->right = b;
+        else
+            root = b;
+        b->parent = a->parent;
+        a->parent = b;
+        if (b->right)
+        {
+            b->right->parent = a;
+            a->left = b->right;
         }
-        y->right = b;
-        b->parent = y;
+        else
+            a->left = nullptr;
+        b->right = a;
     }
 
     void bigTurnLeft(Node* a, Node* b, Node* c)
@@ -217,183 +219,6 @@ class Tree
         smallTurnRight(a, c);
     }
 
-    Node* addNode(const std::string& name, Node* node, Node* parent)
-    {
-        if (!node)
-        {
-            node = new Node(name, parent);
-            return node;
-        }
-
-        if (node && name.compare(node->name) > 0) // имя нового элемента длиннее имени корня
-        {
-            node->right = addNode(name, node->right, node);
-            parent = testToBalance(parent);
-        }
-        else if (node && name.compare(node->name) < 0) // имя нового элемента короче имени корня
-        {
-            node->left = addNode(name, node->left, node);
-            parent = testToBalance(parent);
-        }
-
-        return node;
-    }
-
-public:
-    Node* getRoot() { return root; }
-    const Node* getRoot() const { return root; }
-
-    Tree() : root(nullptr) { }
-
-    Node* addNode(const std::string& name)
-    {
-        if (root == nullptr) // нет элементов
-        {
-            root = new Node(name); // у корня нет родителей
-            return root;
-        }
-        if (name.compare(root->name) > 0) // имя нового элемента длиннее имени корня
-        {
-            root->right = addNode(name, root->right, root);
-        }
-        else if (name.compare(root->name) < 0) // имя нового элемента короче имени корня
-        {
-            root->left = addNode(name, root->left, root);
-        }
-    }
-
-    void print()
-    {
-        if (!root)
-            std::cout << "empty RBtree\n";
-        else
-            print(root);
-
-        std::cout << "\n\n";
-    }
-    void print(Node* node) const
-    {
-        if (!node)
-            return;
-        if (!node->parent)
-            std::cout << "\n(" << node->name << ") is root" << std::endl;
-        else if (node->parent->left == node)
-        {
-            std::cout << "\n(" << node->name << ") is " << node->parent->name << "'s " << "left child" << std::endl;
-        }
-        else
-        {
-            std::cout << "\n(" << node->name << ") is " << node->parent->name << "'s " << "right child" << std::endl;
-        }
-        print(node->left);
-        print(node->right);
-    }
-
-    Node* testToBalance(Node* node)
-    {
-        int bal_factor = difference(node);
-        std::cout << "\nbal_factor = " << bal_factor;
-        if (bal_factor > 1)
-        {
-            if (difference(node->getLeft()) > 0)
-            {
-                smallTurnLeft(node, node->left);
-            }
-            else
-            {
-                smallTurnLeft(node, node->left);
-                //smallTurnLeft(node, node->right);
-            }
-        }
-        else if (bal_factor < -1)
-        {
-            if (difference(node->getRight()) > 0)
-            {
-                smallTurnRight(node, node->right);
-            }
-            else
-            {
-                smallTurnLeft(node, node->right);
-                //smallTurnLeft(node, node->right);
-            }
-
-        }
-        return node;
-    }
-
-    int difference(Node* node)
-    {
-        if (node)
-        {
-            int l_h = findHeight(node->getLeft());
-            int r_h = findHeight(node->getRight());
-            return l_h - r_h;
-        }
-
-        return 0;
-    }
-
-    Node* findNode(const std::string& name)
-    {
-        Node* node = root;
-        while (node)
-        {
-            auto res = name.compare(node->name);
-            if (res == 0)
-                return node;
-            if (res < 0)
-                node = node->left;
-            else
-                node = node->right;
-        }
-        return nullptr;
-    }
-
-    Node* findMin()
-    {
-        Node* node = root;
-        if (!node)
-            return nullptr;
-        while (node->left)
-            node = node->left;
-        return node;
-    }
-
-    Node* findMax()
-    {
-        Node* node = root;
-        if (!node)
-            return nullptr;
-        while (node->right)
-            node = node->right;
-        return node;
-    }
-
-    /// Ищет узел с таким же, или максимально близким справа ("большим") значением name.
-    Node* findClosest(const std::string& name)
-    {
-        Node* node = root;
-        while (node)
-        {
-            auto res = name.compare(node->name);
-            if (res == 0)
-                return node;
-            if (res < 0)
-                node = node->left;
-            else
-                node = node->right;
-        }
-        return node;
-    }
-    int findHeight(const Node* node)
-    {
-        if (node == nullptr)
-            return 0;
-        int left = findHeight(node->getLeft());
-        int right = findHeight(node->getRight());
-        return std::max(left, right) + 1;
-    }
-
     void deleteNode(Node* node)
     {
         if (!node)
@@ -406,121 +231,321 @@ public:
         node = nullptr;
     }
 
+    Node* findClosest(const std::string& name)
+    {
+        Node* node = root;
+        Node* res = nullptr;
+        while (node)
+        {
+            res = node;
+            auto res = name.compare(node->name);
+            if (res == 0)
+                return node;
+            if (res < 0)
+                node = node->left;
+            else
+                node = node->right;
+        }
+        return res;
+    }
+public:
+    Node* getRoot() { return root; }
+    const Node* getRoot() const { return root; }
+
+    Tree() : root(nullptr) { }
+
     ~Tree()
     {
         deleteNode(root);
     }
+    Node* addNode(const std::string& name)
+    {
+        if (root == nullptr)
+        {
+            Node* newNode = new Node(name, nullptr);
+            root = newNode;
+            return root;
+        }
 
-    TreeIterator begin() { return this->findMin(); }     /// Возвращает итератор, указывающий на минимальный элемент
-    TreeIterator end() { return this->findMax()->getRight(); }       /// Возвращает итератор, указывающий на nullptr Node
+        Node* closest = findClosest(name);
+        if (closest && closest->name == name)
+            return nullptr;
+
+        Node* newNode = new Node(name, closest);
+
+        if (name.compare(closest->name) < 0)
+        {
+            closest->left = newNode;
+            newNode->parent = closest;
+        }
+        else if (name.compare(closest->name) > 0)
+        {
+            closest->right = newNode;
+            newNode->parent = closest;
+        }
+
+        if (closest == root)
+            return newNode;
+
+        auto node = closest->parent;
+        if (closest->parent->left == closest)
+        {
+            if (closest->parent->right == nullptr)
+            {
+                if (name.compare(closest->name) < 0)
+                    smallTurnRight(closest->parent, closest);
+                else
+                    bigTurnRight(closest->parent, closest, newNode);
+            }
+        }
+        else
+        {
+            if (closest->parent->left == nullptr)
+            {
+                if (name.compare(closest->name) < 0)
+                    bigTurnLeft(closest->parent, closest, newNode);
+                else
+                    smallTurnLeft(closest->parent, closest);
+            }
+        }
+
+        return newNode;
+
+    }
+
+    Node* findNode(const std::string& name)
+    {
+        auto node = root;
+        while (node)
+        {
+            if (name.compare(node->name) == 0)
+                return node;
+            if (name.compare(node->name) < 0)
+                node = node->left;
+            else
+                node = node->right;
+        }
+        return nullptr;
+    }
+
+    Node* findMin(Node* n)
+    {
+        Node* node = n;
+        if (!node)
+            return nullptr;
+        while (node->left)
+            node = node->left;
+        return node;
+    }
+
+    Node* findMax(Node* n)
+    {
+        Node* node = n;
+        if (!node)
+            return nullptr;
+        while (node->right)
+            node = node->right;
+        return node;
+    }
+
+    Node* removeNode(const std::string& name)
+    {
+        Node* parent;
+        Node* node = root;
+
+        if (root == nullptr)
+            return nullptr;
+        else
+        {
+            while (name.compare(node->name) != 0)
+            {
+                if (name.compare(node->name) < 0)
+                    if (node->left != nullptr)
+                        node = node->left;
+                    else
+                        return nullptr;
+                else
+                    if (node->right != nullptr)
+                        node = node->right;
+                    else
+                        return nullptr;
+            }
+
+            parent = node->parent;
+
+            if (node->left == nullptr && node->right == nullptr)
+            {
+                if (parent->right == node)
+                    parent->right = nullptr;
+                else
+                    parent->left = nullptr;
+                node->parent = nullptr;
+            }
+
+            else if (node->left == nullptr)
+            {
+                if (parent->right = node)
+                    parent->right = node->right;
+                else
+                    parent->left = node->right;
+
+                node->right->parent = parent;
+                node->parent = nullptr;
+                node->right = nullptr;
+            }
+
+            else if (node->right == nullptr)
+            {
+                if (parent->right = node)
+                    parent->right = node->left;
+                else
+                    parent->left = node->left;
+
+                node->left->parent = parent;
+                node->parent = nullptr;
+                node->left = nullptr;
+            }
+
+            else
+            {
+                Node* min = findMin(node->right);
+                node->name = min->name;
+                parent = min->parent;
+                if (parent == node)
+                    parent->right = nullptr;
+                else
+                    parent->left = nullptr;
+                min->parent = nullptr;
+            }
+        }
+        return node;
+    }
+
+    TreeIterator begin() { return this->root->findMin(); }                 /// Возвращает итератор, указывающий на минимальный элемент
+    TreeIterator end() { return this->root->findMax(); }                   /// Возвращает итератор, указывающий на последний Node
 };
-
-
-
-
-
-#include <map>
-#include <set>
 
 void testAddNode() {
     Tree* result = new Tree();
 
     auto abc = result->addNode("Abc");
-    /*assert(abc != nullptr);
+    assert(abc != nullptr);
     assert(abc->name == "Abc");
     assert(abc->description == "");
     assert(abc->getParent() == nullptr);
     assert(abc->getLeft() == nullptr);
-    assert(abc->getRight() == nullptr);*/
-    result->print();
+    assert(abc->getRight() == nullptr);
 
 
     auto def = result->addNode("Def");
-    /*assert(def != nullptr);
+    assert(def != nullptr);
     assert(def->name == "Def");
     assert(def->description == "");
     assert(def->getParent() == abc);
-    assert(abc->getRight() == def);*/
-    result->print();
+    assert(abc->getRight() == def);
 
     auto ghi = result->addNode("Ghi");
     ghi = result->findNode("Ghi");
-    /*assert(ghi != nullptr);
+    assert(ghi != nullptr);
     assert(ghi->name == "Ghi");
     assert(ghi->description == "");
     assert(ghi->getParent() == def);
     assert(ghi->getLeft() == nullptr);
-    assert(ghi->getRight() == nullptr);*/
-    result->print();
+    assert(ghi->getRight() == nullptr);
 
     auto abb = result->addNode("Abb");
     abb = result->findNode("Abb");
-    //assert(abb != nullptr);
-    //assert(abb->name == "Abb");
-    //assert(abb->description == "");
-    //assert(abb->getParent() == abc);
-    //assert(abb->getLeft() == nullptr);
-    //assert(abb->getRight() == nullptr);
-    //assert(abc->getParent() == def);
-    //assert(abc->getLeft() == abb);
-    //assert(abc->getRight() == nullptr);
-    result->print();
+    assert(abb != nullptr);
+    assert(abb->name == "Abb");
+    assert(abb->description == "");
+    assert(abb->getParent() == abc);
+    assert(abb->getLeft() == nullptr);
+    assert(abb->getRight() == nullptr);
+    assert(abc->getParent() == def);
+    assert(abc->getLeft() == abb);
+    assert(abc->getRight() == nullptr);
 
     auto ab = result->addNode("Ab");
-    //assert(ab != nullptr);
-    //assert(ab->name == "Ab");
-    //assert(ab->description == "");
-    //assert(ab->getParent() == abb);
-    //assert(ab->getLeft() == nullptr);
-    //assert(ab->getRight() == nullptr);
-    //assert(abc->getParent() == nullptr);
-    //assert(abc->getLeft() == abb);
-    //assert(abc->getRight() == def);
-    //assert(def->getParent() == abc);
-    //assert(def->getLeft() == nullptr);
-    //assert(def->getRight() == ghi);
-    result->print();
+    ab = result->findNode("Ab");
+    assert(ab != nullptr);
+    assert(ab->name == "Ab");
+    assert(ab->description == "");
+    assert(ab->getParent() == abb);
+    assert(ab->getLeft() == nullptr);
+    assert(ab->getRight() == nullptr);
+    assert(abc->getParent() == abb);
+    assert(abc->getLeft() == nullptr);
+    assert(abc->getRight() == nullptr);
+    assert(def->getParent() == nullptr);
+    assert(def->getLeft() == abb);
+    assert(def->getRight() == ghi);
 
-    auto abbbbb = result->addNode("Abbbbb");
-    //assert(abbbbb != nullptr);
-    //assert(abbbbb->name == "Abbbbb");
-    //assert(abbbbb->description == "");
-    //assert(abbbbb->getParent() == abb);
-    //assert(abbbbb->getLeft() == ab);
-    //assert(abbbbb->getRight() == nullptr);
-    //assert(abb->getParent() == nullptr);
-    //assert(abb->getLeft() == abbbbb);
-    //assert(abb->getRight() == abc);
-    //assert(abc->getParent() == abb);
-    //assert(abc->getLeft() == nullptr);
-    //assert(abc->getRight() == def);
+    auto it = result->removeNode("Ab");
+    it = result->findNode("Abb");
+    assert(it != nullptr);
+    assert(it->name == "Abb");
+    assert(it->description == "");
+    assert(it->getParent() == def);
+    assert(it->getLeft() == nullptr);
+    assert(it->getRight() == abc);
+    assert(abc->getParent() == it);
+    assert(abc->getLeft() == nullptr);
+    assert(abc->getRight() == nullptr);
 
-    result->print();
 
-    auto ddf = result->addNode("Ddf");
-    //assert(ddf != nullptr);
-    //assert(ddf->name == "Ddf");
-    //assert(ddf->description == "");
-    //assert(ddf->getParent() == nullptr);
-    //assert(ddf->getLeft() == abc);
-    //assert(ddf->getRight() == def);
-    //assert(abc->getParent() == ddf);
-    //assert(abc->getLeft() == abb);
-    //assert(abc->getRight() == nullptr);
-    //assert(def->getParent() == ddf);
-    //assert(def->getLeft() == nullptr);
-    //assert(def->getRight() == ghi);
-    result->print();
+    auto min = result->findMin(result->getRoot());
+    assert(min->name == *result->begin());
 
+    auto search_node = result->findNode("Abc");
+    assert(search_node == abc);
 
     std::cout << "\nTest Complite\n";
 }
 
+void testIterator()
+{
+    Tree* ItTree = new Tree();
+    auto a = ItTree->addNode("Abc");
+    auto b = ItTree->addNode("Def");
+    auto c = ItTree->addNode("Ghi");
+    auto d = ItTree->addNode("AAb");
+    TreeIterator it1(ItTree->begin());
+
+
+    assert(it1 != nullptr);
+    assert(*it1 == ItTree->findMin(ItTree->getRoot())->name);
+    ++it1;
+    assert(*it1 == a->name);
+    ++it1;
+    assert(*it1 == b->name);
+    ++it1;
+    assert(*it1 == c->name);
+    --it1;
+    assert(*it1 == b->name);
+    --it1;
+    assert(*it1 == a->name);
+    --it1;
+    assert(*it1 == d->name);
+    --it1;
+    assert(it1 == nullptr);
+
+    it1 = ItTree->end();
+    assert(it1 == c);
+    it1--;
+    assert(it1 == b);
+    it1--;
+    assert(it1 == a);
+    it1--;
+    assert(it1 == d);
+    it1--;
+    assert(it1 == nullptr);
+}
+
+
 int main()
 {
-    std::cout << "Test" << std::endl;
+    std::cerr << "Test" << std::endl;
     testAddNode();
-
-
+    testIterator();
     return 0;
 }
